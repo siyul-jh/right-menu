@@ -1,0 +1,146 @@
+import Cocoa
+import FinderSync
+
+final class FinderMenu: FIFinderSync {
+    // 다른 터미널·에디터는 이 경로만 교체 후 build.sh
+    private static let TERMINAL = URL(fileURLWithPath: "/Applications/cmux.app")
+    private static let EDITOR = URL(fileURLWithPath: "/Applications/Antigravity IDE.app")
+    private static let CUT_KEY = "cutPaths"
+    private static let NEW_FILES: [(label: String, ext: String, body: String)] = [
+        ("텍스트 (.txt)", "txt", ""), ("마크다운 (.md)", "md", ""), ("JSON (.json)", "json", "{}\n"),
+        ("HTML (.html)", "html", "<!doctype html>\n"), ("Python (.py)", "py", ""), ("셸 스크립트 (.sh)", "sh", "#!/bin/bash\n"),
+    ]
+
+    override init() {
+        super.init()
+        let home = NSHomeDirectoryForUser(NSUserName())!
+        FIFinderSyncController.default().directoryURLs = [
+            URL(fileURLWithPath: "/"),
+            URL(fileURLWithPath: home + "/Library/Mobile Documents/com~apple~CloudDocs"),
+            URL(fileURLWithPath: home + "/Library/CloudStorage"),
+        ]
+    }
+
+    override var toolbarItemName: String { "RightMenu" }
+    override var toolbarItemToolTip: String { "터미널 · 에디터 · 경로 복사 · 새 파일 · 잘라내기/붙여넣기" }
+    override var toolbarItemImage: NSImage { NSImage(systemSymbolName: "contextualmenu.and.cursorarrow", accessibilityDescription: nil)! }
+
+    // MARK: 메뉴
+
+    override func menu(for kind: FIMenuKind) -> NSMenu? {
+        guard kind == .contextualMenuForContainer || kind == .contextualMenuForItems || kind == .toolbarItemMenu else { return nil }
+        let menu = NSMenu()
+        add(menu, "여기서 터미널 열기", "terminal", #selector(openTerminal))
+        add(menu, "Antigravity로 열기", "editor", #selector(openEditor))
+
+        let copy = NSMenu()
+        for (i, title) in ["전체 경로", "이름만", "셸 이스케이프 경로", "상대 경로"].enumerated() {
+            add(copy, title, nil, #selector(copyPath(_:)), tag: i)
+        }
+        add(menu, "경로 복사", "copy", nil, sub: copy)
+
+        let new = NSMenu()
+        for (i, f) in Self.NEW_FILES.enumerated() { add(new, f.label, nil, #selector(newFile(_:)), tag: i) }
+        add(menu, "새 파일", "new", nil, sub: new)
+
+        add(menu, "잘라내기", "cut", #selector(cut))
+        if !(UserDefaults.standard.stringArray(forKey: Self.CUT_KEY) ?? []).isEmpty {
+            add(menu, "여기에 붙여넣기 (이동)", "paste", #selector(paste))
+        }
+        add(menu, "숨김 파일 표시 전환", "hidden", #selector(toggleHidden))
+        return menu
+    }
+
+    private func add(_ menu: NSMenu, _ title: String, _ icon: String?, _ action: Selector?, tag: Int = 0, sub: NSMenu? = nil) {
+        let item = menu.addItem(withTitle: title, action: action, keyEquivalent: "")
+        item.tag = tag
+        item.submenu = sub
+        if let icon, let url = Bundle.main.url(forResource: icon, withExtension: "png"), let image = NSImage(contentsOf: url) {
+            image.size = NSSize(width: 16, height: 16)
+            item.image = image
+        }
+    }
+
+    // MARK: 헬퍼
+
+    private var base: URL? { FIFinderSyncController.default().targetedURL() }
+
+    private var selection: [URL] {
+        if let items = FIFinderSyncController.default().selectedItemURLs(), !items.isEmpty { return items }
+        return base.map { [$0] } ?? []
+    }
+
+    private func folder(of url: URL) -> URL {
+        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true ? url : url.deletingLastPathComponent()
+    }
+
+    private func uniqueURL(_ dir: URL, _ name: String, _ ext: String) -> URL {
+        var url = dir.appendingPathComponent(ext.isEmpty ? name : "\(name).\(ext)")
+        var n = 1
+        while FileManager.default.fileExists(atPath: url.path) {
+            n += 1
+            url = dir.appendingPathComponent(ext.isEmpty ? "\(name) \(n)" : "\(name) \(n).\(ext)")
+        }
+        return url
+    }
+
+    // MARK: 동작
+
+    @objc private func openTerminal() {
+        for dir in Set(selection.map(folder(of:))) {
+            NSWorkspace.shared.open([dir], withApplicationAt: Self.TERMINAL, configuration: NSWorkspace.OpenConfiguration())
+        }
+    }
+
+    @objc private func openEditor() {
+        NSWorkspace.shared.open(selection, withApplicationAt: Self.EDITOR, configuration: NSWorkspace.OpenConfiguration())
+    }
+
+    @objc private func copyPath(_ sender: NSMenuItem) {
+        let root = base?.path ?? ""
+        let text = selection.map { url -> String in
+            switch sender.tag {
+            case 1: return url.lastPathComponent
+            case 2: return "'" + url.path.replacingOccurrences(of: "'", with: "'\\''") + "'"
+            case 3: return url.path.hasPrefix(root + "/") ? String(url.path.dropFirst(root.count + 1)) : url.path
+            default: return url.path
+            }
+        }.joined(separator: "\n")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    @objc private func newFile(_ sender: NSMenuItem) {
+        let f = Self.NEW_FILES[sender.tag]
+        var created: [URL] = []
+        for dir in Set(selection.map(folder(of:))) {
+            let url = uniqueURL(dir, "새 파일", f.ext)
+            if FileManager.default.createFile(atPath: url.path, contents: Data(f.body.utf8)) { created.append(url) }
+        }
+        NSWorkspace.shared.activateFileViewerSelecting(created)
+    }
+
+    @objc private func cut() {
+        UserDefaults.standard.set(selection.map(\.path), forKey: Self.CUT_KEY)
+    }
+
+    @objc private func paste() {
+        guard let dir = selection.first.map(folder(of:)) else { return }
+        var moved: [URL] = []
+        for path in UserDefaults.standard.stringArray(forKey: Self.CUT_KEY) ?? [] {
+            let src = URL(fileURLWithPath: path)
+            let dst = src.deletingLastPathComponent() == dir ? src : uniqueURL(dir, src.deletingPathExtension().lastPathComponent, src.pathExtension)
+            if dst != src, (try? FileManager.default.moveItem(at: src, to: dst)) != nil { moved.append(dst) }
+        }
+        UserDefaults.standard.removeObject(forKey: Self.CUT_KEY)
+        NSWorkspace.shared.activateFileViewerSelecting(moved)
+    }
+
+    @objc private func toggleHidden() {
+        let key = "AppleShowAllFiles" as CFString, finder = "com.apple.finder" as CFString
+        let on = (CFPreferencesCopyAppValue(key, finder) as? Bool) ?? false
+        CFPreferencesSetAppValue(key, !on as CFBoolean, finder)
+        CFPreferencesAppSynchronize(finder)
+        NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first?.forceTerminate()
+    }
+}
