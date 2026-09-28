@@ -84,7 +84,7 @@ Finder를 재시작하지 않고 전환하려면 **시스템 설정 > 개인정�
 
 ## iCloud Drive
 
-iCloud Drive 폴더에서는 우클릭 메뉴가 나타나지 않는다. macOS가 iCloud Drive를 자체 Finder 확장으로 관리해서, 다른 앱의 Finder 확장이 같은 폴더에 메뉴를 붙일 수 없기 때문이다(Sonoma 이후). 대신 **Finder 도구 막대의 Righto 버튼**을 사용한다.
+iCloud Drive 폴더에서는 우클릭 메뉴가 나타나지 않는다. macOS가 iCloud Drive를 자체 Finder 확장으로 관리해서 다른 앱의 Finder 확장이 같은 폴더에 메뉴를 붙일 수 없기 때문이다(Sonoma 이후). 대신 **Finder 도구 막대의 Righto 버튼**을 사용한다.
 
 도구 막대에 넣으려면 Finder 도구 막대를 우클릭하고 **도구 막대 사용자화…**에서 `Righto`를 끌어다 놓는다.
 
