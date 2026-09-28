@@ -1,6 +1,6 @@
 # 도구 막대 아이콘 프롬프트
 
-Finder 도구 막대에 놓이는 RightMenu 버튼용 아이콘 1종. 메뉴 아이콘(16px)보다 크게(약 32px) 표시되므로 디테일을 조금 더 넣을 수 있다. 메뉴 아이콘 7종은 `icon-prompts.md`를 참고한다.
+Finder 도구 막대에 놓이는 Righto 버튼용 아이콘 1종. 메뉴 아이콘(16px)보다 크게(약 32px) 표시되므로 디테일을 조금 더 넣을 수 있다. 메뉴 아이콘 7종은 `icon-prompts.md`를 참고한다.
 
 | 파일명 | 용도 | 주색 |
 |---|---|---|
@@ -25,4 +25,4 @@ A colorful UI toolbar icon for a macOS Finder toolbar button, flat vector style 
 
 ## 적용
 
-`~/right-menu/icons/toolbar.png`로 저장하면 된다. 그러면 `icons/menu/toolbar.png`(현재 2×2 합성 이미지)를 교체하는 작업을 진행한다.
+`~/righto/icons/toolbar.png`로 저장하면 된다. 그러면 `icons/menu/toolbar.png`(현재 2×2 합성 이미지)를 교체하는 작업을 진행한다.

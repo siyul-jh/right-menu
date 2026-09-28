@@ -21,7 +21,7 @@ final class FinderMenu: FIFinderSync {
         ]
     }
 
-    override var toolbarItemName: String { "RightMenu" }
+    override var toolbarItemName: String { "Righto" }
     override var toolbarItemToolTip: String { "터미널 · 에디터 · 경로 복사 · 새 파일 · 잘라내기/붙여넣기" }
     override var toolbarItemImage: NSImage {
         Bundle.main.url(forResource: "toolbar", withExtension: "png").flatMap(NSImage.init(contentsOf:))

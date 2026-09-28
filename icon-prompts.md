@@ -1,4 +1,4 @@
-# RightMenu 메뉴 아이콘 프롬프트 (컬러 버전)
+# Righto 메뉴 아이콘 프롬프트 (컬러 버전)
 
 macOS Finder 우클릭 메뉴용 아이콘 7종. 기능마다 다른 색을 쓰되, 메뉴에서 16~20px로 작게 보이므로 **단순한 도형 + 굵은 면 + 높은 채도**로 만든다.
 
@@ -18,7 +18,7 @@ macOS Finder 우클릭 메뉴용 아이콘 7종. 기능마다 다른 색을 쓰�
 
 1. 항목별 프롬프트를 복사해 이미지 생성 AI에 입력한다. 공통 스타일이 이미 포함돼 있다.
 2. **같은 세션에서 연속 생성**해야 스타일이 일관된다.
-3. 결과를 `~/right-menu/icons/`에 위 파일명으로 저장한다.
+3. 결과를 `icons/`에 위 파일명으로 저장한다.
 
 ## 공통 스타일 (참고용)
 
@@ -82,4 +82,4 @@ A colorful UI menu icon for a macOS app, flat vector style with bold solid color
 
 ## 다음 단계
 
-이미지를 `~/right-menu/icons/`에 넣으면 `FinderMenu.swift`가 SF Symbols 대신 이 PNG를 쓰도록 수정한다. 컬러 이미지라서 다크 모드 자동 반전은 되지 않는다. 그래서 어두운 배경에서도 읽히도록 밝은 톤의 채도 높은 색을 쓴다.
+이미지를 `icons/`에 넣으면 `FinderMenu.swift`가 SF Symbols 대신 이 PNG를 쓰도록 수정한다. 컬러 이미지라서 다크 모드 자동 반전은 되지 않는다. 그래서 어두운 배경에서도 읽히도록 밝은 톤의 채도 높은 색을 쓴다.
