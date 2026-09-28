@@ -79,7 +79,8 @@ final class Delegate: NSObject, NSApplicationDelegate {
             popup.tag = tag
             popup.target = self
             popup.action = #selector(picked(_:))
-            popup.widthAnchor.constraint(greaterThanOrEqualToConstant: 240).isActive = true
+            popup.controlSize = .large
+            popup.widthAnchor.constraint(greaterThanOrEqualToConstant: 300).isActive = true
         }
         refill()
 
@@ -89,28 +90,45 @@ final class Delegate: NSObject, NSApplicationDelegate {
         applyButton.action = #selector(apply)
         applyButton.keyEquivalent = "\r"
         applyButton.isEnabled = false
+        for button in [close, applyButton] {
+            button.controlSize = .large
+            button.widthAnchor.constraint(greaterThanOrEqualToConstant: 84).isActive = true
+        }
         let buttons = NSStackView(views: [close, applyButton])
         buttons.spacing = 8
+        buttons.setHuggingPriority(.required, for: .horizontal)  // 늘어나지 않게 해서 오른쪽 정렬이 적용되도록
 
         let grid = NSGridView(views: [
             [NSTextField(labelWithString: "터미널"), terminalPopup],
             [NSTextField(labelWithString: "에디터"), editorPopup],
         ])
-        grid.rowSpacing = 10
-        grid.columnSpacing = 8
+        grid.rowSpacing = 12
+        grid.columnSpacing = 12
         grid.column(at: 0).xPlacement = .trailing
         grid.rowAlignment = .firstBaseline
+        for row in 0..<grid.numberOfRows {  // 라벨도 컨트롤 크기에 맞춘다
+            (grid.cell(atColumnIndex: 0, rowIndex: row).contentView as? NSTextField)?.font = .systemFont(ofSize: 14)
+        }
 
         let content = NSStackView(views: [grid, buttons])
         content.orientation = .vertical
         content.alignment = .trailing
-        content.spacing = 14
-        content.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        content.spacing = 20
 
         let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = "Righto 설정"
-        window.contentView = content
-        window.setContentSize(content.fittingSize)
+        // NSStackView.edgeInsets 는 fittingSize 에 반영되지 않아서, 컨테이너에 제약으로 여백을 준다.
+        let container = NSView()
+        content.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(content)
+        NSLayoutConstraint.activate([
+            content.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+            content.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
+            content.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            content.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+        ])
+        window.contentView = container
+        window.setContentSize(container.fittingSize)
         window.center()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
