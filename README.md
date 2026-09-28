@@ -10,6 +10,11 @@ macOS Finder 우클릭 메뉴 확장 (Finder Sync). 터미널 열기, 에디터�
 
 Xcode(swiftc)만 필요. 시스템 설정 > 개인정보 보호 및 보안 > 확장 프로그램 > Finder 에서 RightMenu 가 켜져 있어야 한다.
 
+## 구조
+
+- `FinderMenu.swift` — Finder Sync 확장 (샌드박스). 메뉴·동작.
+- `Host.swift` — 샌드박스 밖 헬퍼. 숨김 파일 전환처럼 Finder 설정을 바꾸는 작업만 담당 (`--toggle-hidden`).
+
 ## 설정
 
 `FinderMenu.swift` 상단의 `TERMINAL`, `EDITOR` 경로를 바꾸고 `./build.sh`.
