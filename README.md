@@ -22,8 +22,8 @@
 
 | | 기능 | 설명 |
 |---|---|---|
-| <img src="icons/menu/terminal.png" width="24"> | **여기서 터미널 열기** | 선택한 폴더(파일이면 그 위치)를 지정한 터미널로 연다 |
-| <img src="icons/menu/editor.png" width="24"> | **에디터로 열기** | 선택한 파일·폴더를 지정한 에디터로 연다 |
+| <img src="icons/menu/terminal.png" width="24"> | **여기서 터미널 열기** | 선택한 폴더(파일이면 그 위치)를 설정한 터미널로 연다. 메뉴에 앱 이름과 아이콘이 표시된다 |
+| <img src="icons/menu/editor.png" width="24"> | **에디터로 열기** | 선택한 파일·폴더를 설정한 에디터로 연다. 메뉴에 앱 이름과 아이콘이 표시된다 |
 | <img src="icons/menu/copy.png" width="24"> | **경로 복사** | 전체 경로 / 이름만 / 셸 이스케이프 경로 / 상대 경로 |
 | <img src="icons/menu/new.png" width="24"> | **새 파일** | `.txt` `.md` `.json` `.html` `.py` `.sh` (json·html·sh는 기본 내용 포함) |
 | <img src="icons/menu/cut.png" width="24"> | **잘라내기** | 선택 항목을 잘라낸다 |
@@ -39,7 +39,7 @@
 [Releases](https://github.com/siyul-jh/righto/releases)에서 최신 `Righto-<버전>.dmg`를 받는다. 직접 만들려면 `./dmg.sh`(→ `dist/Righto-<버전>.dmg`)를 실행한다.
 
 1. DMG를 열고 **Righto.app**을 **Applications**로 끌어다 놓는다.
-2. `Righto.app`을 한 번 실행한다(화면에는 아무것도 뜨지 않는다).
+2. `Righto.app`을 한 번 실행한다. 설정 창이 열리면 터미널·에디터를 고르고 **적용**을 누른다.
 3. **시스템 설정 > 개인정보 보호 및 보안 > 확장 프로그램 > Finder**에서 `Righto`를 켠다.
 
 > **다른 Mac에서 받은 DMG:** Apple 개발자 인증(공증)이 없는 ad-hoc 서명이라 "확인되지 않은 개발자" 경고가 뜬다. 소스를 확인한 뒤 격리 속성을 제거하고 실행한다.
@@ -79,19 +79,25 @@ Finder를 재시작하지 않고 전환하려면 **시스템 설정 > 개인정�
 
 ## 설정
 
-`FinderMenu.swift` 상단의 경로를 바꾸고 `./build.sh`를 다시 실행한다.
+`Righto.app`을 실행하면 설정 창이 열린다. 터미널과 에디터를 고르고 **적용**을 누른다. 적용하기 전까지는 저장되지 않고, **닫기**를 누르면 변경이 버려진다.
 
-```swift
-private static let TERMINAL = URL(fileURLWithPath: "/Applications/cmux.app")
-private static let EDITOR   = URL(fileURLWithPath: "/Applications/Antigravity IDE.app")
-```
+| | 목록에 나오는 앱 |
+|---|---|
+| **터미널** | cmux, Ghostty, iTerm, Warp, Terminal 중 설치된 것 |
+| **에디터** | Antigravity, Cursor, VS Code, Zed, Sublime Text, BBEdit, Nova, CotEditor, Xcode, TextEdit 중 설치된 것 |
+
+- 목록에 없는 앱은 **기타…**로 직접 고른다.
+- 한 번도 고르지 않았거나 고른 앱이 지워졌으면 설치된 목록의 첫 번째 앱을 쓴다.
+- 설정은 `~/Library/Application Support/Righto/config.json`에 저장된다.
+- kitty, Alacritty처럼 폴더를 명령줄 인자로만 받는 터미널은 폴더가 열리지 않을 수 있다.
 
 ## 구조
 
 ```
 righto/
 ├── FinderMenu.swift     Finder Sync 확장 (샌드박스). 메뉴와 동작
-├── Host.swift           샌드박스 밖 헬퍼. 숨김 파일 전환만 담당
+├── Host.swift           Righto.app. 설정 창과 숨김 파일 전환(샌드박스 밖)
+├── Config.swift         터미널·에디터 선택 설정 (설정 창과 확장이 공유)
 ├── ext.entitlements     확장 권한 (샌드박스 + /Users/, /Volumes/ 쓰기)
 ├── build.sh             빌드 · 서명 · 등록 스크립트
 ├── dmg.sh               DMG 생성 스크립트 (dist/Righto-<버전>.dmg)
@@ -101,7 +107,7 @@ righto/
 
 - **네트워크 코드 없음.** 통신하는 부분이 없고 외부 라이브러리도 쓰지 않는다.
 - **최소 권한.** 확장은 샌드박스에서 실행되며 `/Users/`와 `/Volumes/`에만 쓸 수 있다.
-- 샌드박스 확장은 실행 인자를 넘길 수 없어서, 헬퍼는 **실행되는 것 자체가 숨김 파일 전환 동작**이다. `build.sh`는 `--register`로 실행해 이를 건너뛴다.
+- 샌드박스 확장은 Finder 설정을 바꿀 수 없어서, 숨김 파일 전환은 `righto://toggle-hidden` URL로 `Righto.app`에 요청한다. `build.sh`는 `--register`로 실행해 등록만 하고 바로 끝낸다.
 
 ## 한계
 
