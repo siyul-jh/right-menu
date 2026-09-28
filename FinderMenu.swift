@@ -23,7 +23,10 @@ final class FinderMenu: FIFinderSync {
 
     override var toolbarItemName: String { "RightMenu" }
     override var toolbarItemToolTip: String { "터미널 · 에디터 · 경로 복사 · 새 파일 · 잘라내기/붙여넣기" }
-    override var toolbarItemImage: NSImage { NSImage(systemSymbolName: "contextualmenu.and.cursorarrow", accessibilityDescription: nil)! }
+    override var toolbarItemImage: NSImage {
+        Bundle.main.url(forResource: "toolbar", withExtension: "png").flatMap(NSImage.init(contentsOf:))
+            ?? NSImage(systemSymbolName: "contextualmenu.and.cursorarrow", accessibilityDescription: nil)!
+    }
 
     // MARK: 메뉴
 
@@ -137,10 +140,10 @@ final class FinderMenu: FIFinderSync {
     }
 
     @objc private func toggleHidden() {
-        let key = "AppleShowAllFiles" as CFString, finder = "com.apple.finder" as CFString
-        let on = (CFPreferencesCopyAppValue(key, finder) as? Bool) ?? false
-        CFPreferencesSetAppValue(key, !on as CFBoolean, finder)
-        CFPreferencesAppSynchronize(finder)
-        NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first?.forceTerminate()
+        let host = Bundle.main.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let config = NSWorkspace.OpenConfiguration()
+        config.arguments = ["--toggle-hidden"]
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: host, configuration: config)
     }
 }
