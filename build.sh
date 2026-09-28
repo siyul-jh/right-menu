@@ -6,15 +6,17 @@ APP=${APP:-~/Applications/Righto.app}; V=$(cat VERSION); EXT="$APP/Contents/Plug
 ID=local.righto
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$EXT/Contents/MacOS"
 cp icons/Righto.icns "$APP/Contents/Resources/"
-swiftc -O -o "$APP/Contents/MacOS/Righto" Host.swift
-swiftc -O -module-name FinderMenu -application-extension -o "$EXT/Contents/MacOS/FinderMenu" FinderMenu.swift \
+swiftc -O -o "$APP/Contents/MacOS/Righto" Host.swift Config.swift
+swiftc -O -module-name FinderMenu -application-extension -o "$EXT/Contents/MacOS/FinderMenu" FinderMenu.swift Config.swift \
   -framework FinderSync -framework Cocoa -Xlinker -e -Xlinker _NSExtensionMain
 cat > "$APP/Contents/Info.plist" <<P
 <?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict>
 <key>CFBundleIdentifier</key><string>$ID</string><key>CFBundleName</key><string>Righto</string>
 <key>CFBundleExecutable</key><string>Righto</string><key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>$V</string><key>CFBundleVersion</key><string>$V</string>
-<key>CFBundleIconFile</key><string>Righto</string><key>LSUIElement</key><true/></dict></plist>
+<key>CFBundleIconFile</key><string>Righto</string><key>LSUIElement</key><true/>
+<key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>Righto</string><key>CFBundleURLSchemes</key><array><string>righto</string></array></dict></array>
+</dict></plist>
 P
 cat > "$EXT/Contents/Info.plist" <<P
 <?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict>

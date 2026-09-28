@@ -1,7 +1,9 @@
 import Cocoa
 
-// 샌드박스 밖 헬퍼. 확장이 실행하면(인자 없이) 숨김 파일 표시를 전환한다. build.sh 는 --register 로 실행해 건너뛴다.
-// 샌드박스 확장은 실행 인자를 넘기지 못하므로 실행 자체가 동작이다.
+// Righto.app: 실행하면 설정 창(터미널·에디터 선택)을 띄운다.
+// Finder 확장은 righto://toggle-hidden 을 열어 숨김 파일 표시를 전환한다(샌드박스 확장은 이 앱을 직접 조작할 수 없다).
+// build.sh 는 --register 로 실행해 등록만 하고 바로 끝낸다.
+
 func toggleHidden() {
     let prompt = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
     // 손쉬운 사용 권한이 있으면 Finder 에 Cmd+Shift+. 를 보낸다 (재시작 없음).
@@ -26,4 +28,143 @@ func toggleHidden() {
     kill.waitUntilExit()
 }
 
-if !CommandLine.arguments.contains("--register") { toggleHidden() }
+final class Delegate: NSObject, NSApplicationDelegate {
+    private var window: NSWindow?
+    private var launchedByURL = false
+    private let terminalPopup = NSPopUpButton(frame: .zero, pullsDown: false)
+    private let editorPopup = NSPopUpButton(frame: .zero, pullsDown: false)
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        NSAppleEventManager.shared().setEventHandler(
+            self, andSelector: #selector(handleURL(_:reply:)),
+            forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // URL 로 실행된 경우(숨김 파일 전환)에는 창 없이 끝낸다. URL 이벤트가 도착할 시간을 잠깐 준다.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [self] in
+            launchedByURL ? NSApp.terminate(nil) : showWindow()
+        }
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+
+    // 이미 실행 중인 상태에서 다시 열면(Dock, 더블클릭) 설정 창을 앞으로 가져온다.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showWindow()
+        return true
+    }
+
+    @objc private func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
+        guard event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue == "righto://toggle-hidden" else { return }
+        if window == nil { launchedByURL = true }
+        toggleHidden()
+    }
+
+    // MARK: 설정 창
+
+    // 팝업에서 고른 값은 pending 에만 두고, '적용'을 눌러야 저장한다.
+    private var pending = (terminal: Config.terminal, editor: Config.editor)
+    private let applyButton = NSButton(title: "적용", target: nil, action: nil)
+
+    private func showWindow() {
+        if let window {
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+        NSApp.setActivationPolicy(.regular)
+        pending = (Config.terminal, Config.editor)
+        for (popup, tag) in [(terminalPopup, 0), (editorPopup, 1)] {
+            popup.tag = tag
+            popup.target = self
+            popup.action = #selector(picked(_:))
+            popup.widthAnchor.constraint(greaterThanOrEqualToConstant: 240).isActive = true
+        }
+        refill()
+
+        let close = NSButton(title: "닫기", target: self, action: #selector(closeWindow))
+        close.keyEquivalent = "\u{1b}"
+        applyButton.target = self
+        applyButton.action = #selector(apply)
+        applyButton.keyEquivalent = "\r"
+        applyButton.isEnabled = false
+        let buttons = NSStackView(views: [close, applyButton])
+        buttons.spacing = 8
+
+        let grid = NSGridView(views: [
+            [NSTextField(labelWithString: "터미널"), terminalPopup],
+            [NSTextField(labelWithString: "에디터"), editorPopup],
+        ])
+        grid.rowSpacing = 10
+        grid.columnSpacing = 8
+        grid.column(at: 0).xPlacement = .trailing
+        grid.rowAlignment = .firstBaseline
+
+        let content = NSStackView(views: [grid, buttons])
+        content.orientation = .vertical
+        content.alignment = .trailing
+        content.spacing = 14
+        content.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+
+        let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        window.title = "Righto 설정"
+        window.contentView = content
+        window.setContentSize(content.fittingSize)
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        self.window = window
+    }
+
+    private func refill() {
+        fill(terminalPopup, Config.terminals, current: pending.terminal)
+        fill(editorPopup, Config.editors, current: pending.editor)
+        applyButton.isEnabled = pending != (Config.terminal, Config.editor)
+    }
+
+    private func fill(_ popup: NSPopUpButton, _ candidates: [URL], current: URL) {
+        popup.removeAllItems()
+        let apps = candidates.contains(current) ? candidates : [current] + candidates
+        for app in apps {
+            let item = NSMenuItem(title: Config.name(app), action: nil, keyEquivalent: "")
+            item.representedObject = app
+            item.image = Config.icon(app)
+            popup.menu?.addItem(item)
+        }
+        popup.menu?.addItem(.separator())
+        popup.menu?.addItem(NSMenuItem(title: "기타…", action: nil, keyEquivalent: ""))
+        popup.selectItem(at: apps.firstIndex(of: current) ?? 0)
+    }
+
+    @objc private func picked(_ popup: NSPopUpButton) {
+        var chosen = popup.selectedItem?.representedObject as? URL
+        if chosen == nil {  // '기타…'
+            let panel = NSOpenPanel()
+            panel.directoryURL = URL(fileURLWithPath: "/Applications")
+            panel.allowedContentTypes = [.application]
+            chosen = panel.runModal() == .OK ? panel.url : nil
+        }
+        if let chosen {
+            if popup.tag == 0 { pending.terminal = chosen } else { pending.editor = chosen }
+        }
+        refill()  // 취소했으면 이전 선택으로 복귀, '기타…'로 고른 앱은 목록에 추가된다
+    }
+
+    @objc private func apply() {
+        Config.set(terminal: pending.terminal, editor: pending.editor)
+        applyButton.isEnabled = false
+    }
+
+    @objc private func closeWindow() { window?.close() }
+}
+
+@main
+enum Main {
+    static func main() {
+        if CommandLine.arguments.contains("--register") { exit(0) }
+        let delegate = Delegate()
+        NSApplication.shared.delegate = delegate
+        NSApplication.shared.run()
+    }
+}

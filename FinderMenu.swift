@@ -2,9 +2,6 @@ import Cocoa
 import FinderSync
 
 final class FinderMenu: FIFinderSync {
-    // 다른 터미널·에디터는 이 경로만 교체 후 build.sh
-    private static let TERMINAL = URL(fileURLWithPath: "/Applications/cmux.app")
-    private static let EDITOR = URL(fileURLWithPath: "/Applications/Antigravity IDE.app")
     private static let CUT_KEY = "cutPaths"
     private static let NEW_FILES: [(label: String, ext: String, body: String)] = [
         ("텍스트 (.txt)", "txt", ""), ("마크다운 (.md)", "md", ""), ("JSON (.json)", "json", "{}\n"),
@@ -33,8 +30,14 @@ final class FinderMenu: FIFinderSync {
     override func menu(for kind: FIMenuKind) -> NSMenu? {
         guard kind == .contextualMenuForContainer || kind == .contextualMenuForItems || kind == .toolbarItemMenu else { return nil }
         let menu = NSMenu()
-        add(menu, "여기서 터미널 열기", "terminal", #selector(openTerminal))
-        add(menu, "Antigravity로 열기", "editor", #selector(openEditor))
+        // 설정 창에서 고른 앱의 이름과 아이콘을 그대로 보여 준다.
+        for (title, app, action) in [
+            ("여기서 터미널 열기", Config.terminal, #selector(openTerminal)),
+            ("에디터로 열기", Config.editor, #selector(openEditor)),
+        ] {
+            let item = menu.addItem(withTitle: "\(title) (\(Config.name(app)))", action: action, keyEquivalent: "")
+            item.image = Config.icon(app)
+        }
 
         let copy = NSMenu()
         for (i, title) in ["전체 경로", "이름만", "셸 이스케이프 경로", "상대 경로"].enumerated() {
@@ -91,12 +94,12 @@ final class FinderMenu: FIFinderSync {
 
     @objc private func openTerminal() {
         for dir in Set(selection.map(folder(of:))) {
-            NSWorkspace.shared.open([dir], withApplicationAt: Self.TERMINAL, configuration: NSWorkspace.OpenConfiguration())
+            NSWorkspace.shared.open([dir], withApplicationAt: Config.terminal, configuration: NSWorkspace.OpenConfiguration())
         }
     }
 
     @objc private func openEditor() {
-        NSWorkspace.shared.open(selection, withApplicationAt: Self.EDITOR, configuration: NSWorkspace.OpenConfiguration())
+        NSWorkspace.shared.open(selection, withApplicationAt: Config.editor, configuration: NSWorkspace.OpenConfiguration())
     }
 
     @objc private func copyPath(_ sender: NSMenuItem) {
@@ -139,10 +142,8 @@ final class FinderMenu: FIFinderSync {
         NSWorkspace.shared.activateFileViewerSelecting(moved)
     }
 
+    // 샌드박스 확장은 Finder 설정을 바꿀 수 없어서 Righto.app 에 URL 로 요청한다.
     @objc private func toggleHidden() {
-        let host = Bundle.main.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        let config = NSWorkspace.OpenConfiguration()
-        config.createsNewApplicationInstance = true
-        NSWorkspace.shared.openApplication(at: host, configuration: config)
+        NSWorkspace.shared.open(URL(string: "righto://toggle-hidden")!)
     }
 }
