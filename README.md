@@ -15,6 +15,10 @@ Xcode(swiftc)만 필요. 시스템 설정 > 개인정보 보호 및 보안 > 확
 - `FinderMenu.swift` — Finder Sync 확장 (샌드박스). 메뉴·동작.
 - `Host.swift` — 샌드박스 밖 헬퍼. 숨김 파일 전환처럼 Finder 설정을 바꾸는 작업만 담당 (실행 자체가 전환 동작, `--register` 는 건너뜀).
 
+## 숨김 파일 전환 권한
+
+Finder 를 재시작하지 않고 `Cmd+Shift+.` 를 보내려면 시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에 `~/Applications/RightMenu.app` 을 추가해 켠다. 권한이 없으면 Finder 를 재시작하는 방식으로 대체된다. ad-hoc 서명이라 `build.sh` 로 다시 빌드하면 권한이 초기화될 수 있다.
+
 ## 설정
 
 `FinderMenu.swift` 상단의 `TERMINAL`, `EDITOR` 경로를 바꾸고 `./build.sh`.
