@@ -54,6 +54,11 @@ final class FinderMenu: FIFinderSync {
             add(menu, "여기에 붙여넣기 (이동)", "paste", #selector(paste))
         }
         add(menu, "숨김 파일 표시 전환", "hidden", #selector(toggleHidden))
+        if FIFinderSyncController.default().selectedItemURLs()?.isEmpty == false {
+            add(menu, "이름 일괄 변경…", "rename", #selector(rename))
+        }
+        add(menu, "폴더로 이동…", "goto", #selector(goTo))
+
         return menu
     }
 
@@ -142,8 +147,18 @@ final class FinderMenu: FIFinderSync {
         NSWorkspace.shared.activateFileViewerSelecting(moved)
     }
 
-    // 샌드박스 확장은 Finder 설정을 바꿀 수 없어서 Righto.app 에 URL 로 요청한다.
-    @objc private func toggleHidden() {
-        NSWorkspace.shared.open(URL(string: "righto://toggle-hidden")!)
+    // 샌드박스 확장은 Finder 설정을 바꾸거나 창을 띄울 수 없어서 Righto.app 에 URL 로 요청한다.
+    private func request(_ command: String, _ query: [URLQueryItem] = []) {
+        var url = URLComponents(string: "righto://" + command)!
+        if !query.isEmpty { url.queryItems = query }
+        NSWorkspace.shared.open(url.url!)
     }
+
+    @objc private func toggleHidden() { request("toggle-hidden") }
+
+    @objc private func rename() {
+        request("rename", (FIFinderSyncController.default().selectedItemURLs() ?? []).map { URLQueryItem(name: "p", value: $0.path) })
+    }
+
+    @objc private func goTo() { request("goto", base.map { [URLQueryItem(name: "base", value: $0.path)] } ?? []) }
 }

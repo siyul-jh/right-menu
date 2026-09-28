@@ -1,7 +1,8 @@
 import Cocoa
 
 // Righto.app: 실행하면 설정 창(터미널·에디터 선택)을 띄운다.
-// Finder 확장은 righto://toggle-hidden 을 열어 숨김 파일 표시를 전환한다(샌드박스 확장은 이 앱을 직접 조작할 수 없다).
+// Finder 확장은 샌드박스라 이 앱에 righto:// URL 로 요청한다:
+//   toggle-hidden (숨김 파일 전환), rename?p=<경로>… (이름 일괄 변경), goto?base=<폴더> (폴더로 이동)
 // build.sh 는 --register 로 실행해 등록만 하고 바로 끝낸다.
 
 func toggleHidden() {
@@ -41,9 +42,10 @@ final class Delegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // URL 로 실행된 경우(숨김 파일 전환)에는 창 없이 끝낸다. URL 이벤트가 도착할 시간을 잠깐 준다.
+        // URL 로 실행된 경우에는 설정 창을 띄우지 않고, 남은 창(이름 변경)이 없으면 끝낸다. URL 이벤트가 도착할 시간을 잠깐 준다.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [self] in
-            launchedByURL ? NSApp.terminate(nil) : showWindow()
+            guard launchedByURL else { return showWindow() }
+            if !NSApp.windows.contains(where: \.isVisible) { NSApp.terminate(nil) }
         }
     }
 
@@ -56,9 +58,15 @@ final class Delegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
-        guard event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue == "righto://toggle-hidden" else { return }
+        guard let url = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue.flatMap(URLComponents.init(string:)) else { return }
         if window == nil { launchedByURL = true }
-        toggleHidden()
+        let query = url.queryItems ?? []
+        switch url.host {
+        case "toggle-hidden": toggleHidden()
+        case "rename": RenameWindow.show(query.filter { $0.name == "p" }.compactMap(\.value).map(URL.init(fileURLWithPath:)))
+        case "goto": goTo(base: URL(fileURLWithPath: query.first { $0.name == "base" }?.value ?? NSHomeDirectory()))
+        default: break
+        }
     }
 
     // MARK: 설정 창
