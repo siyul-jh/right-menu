@@ -1,0 +1,43 @@
+name: dmg
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write  # 새 버전 릴리스 생성
+
+jobs:
+  dmg:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: DMG 빌드
+        run: ./dmg.sh
+
+      - name: 버전 읽기
+        id: version
+        run: echo "value=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: 아티팩트 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: Righto-${{ steps.version.outputs.value }}
+          path: dist/*.dmg
+
+      # VERSION 이 올라간 push 만 릴리스를 만든다. 같은 버전의 태그가 있으면 건너뛴다.
+      - name: 새 버전이면 릴리스 생성
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          TAG="v$VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "$TAG 릴리스가 이미 있어 건너뜀"
+            exit 0
+          fi
+          SHA=$(shasum -a 256 dist/Righto-$VERSION.dmg | awk '{print $1}')
+          gh release create "$TAG" "dist/Righto-$VERSION.dmg" \
+            --target "$GITHUB_SHA" --title "Righto $VERSION" --generate-notes \
+            --notes "SHA-256: \`$SHA\`"
