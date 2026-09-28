@@ -4,7 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 APP=~/Applications/RightMenu.app; EXT="$APP/Contents/PlugIns/FinderMenu.appex"
 ID=local.rightmenu
-rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$EXT/Contents/MacOS"
+rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$EXT/Contents/MacOS"
+cp icons/RightMenu.icns "$APP/Contents/Resources/"
 swiftc -O -o "$APP/Contents/MacOS/RightMenu" Host.swift
 swiftc -O -module-name FinderMenu -application-extension -o "$EXT/Contents/MacOS/FinderMenu" FinderMenu.swift \
   -framework FinderSync -framework Cocoa -Xlinker -e -Xlinker _NSExtensionMain
@@ -13,7 +14,7 @@ cat > "$APP/Contents/Info.plist" <<P
 <key>CFBundleIdentifier</key><string>$ID</string><key>CFBundleName</key><string>RightMenu</string>
 <key>CFBundleExecutable</key><string>RightMenu</string><key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>1.0</string><key>CFBundleVersion</key><string>1</string>
-<key>LSUIElement</key><true/></dict></plist>
+<key>CFBundleIconFile</key><string>RightMenu</string><key>LSUIElement</key><true/></dict></plist>
 P
 cat > "$EXT/Contents/Info.plist" <<P
 <?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict>
