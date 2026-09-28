@@ -35,11 +35,35 @@
 
 폴더 배경, 폴더, 파일 우클릭과 Finder 도구 막대 버튼에서 같은 메뉴를 쓸 수 있다.
 
+## 화면
+
+### 우클릭 메뉴
+
+Finder 기본 항목 아래에 Righto 항목이 붙는다. 터미널·에디터 항목에는 설정에서 고른 앱의 이름과 아이콘이 표시되고, **이름 일괄 변경…**은 파일을 선택했을 때만 나타난다.
+
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="screenshots/menu-dark.png">
+  <img src="screenshots/menu-light.png" width="259" alt="Finder 우클릭 메뉴">
+</picture>
+</p>
+
+### 이름 일괄 변경
+
+찾기/바꾸기와 새 이름 템플릿을 입력하면 표에서 바로 결과를 미리 볼 수 있다. 아래 예시는 `IMG_`를 지우고 `제주_{n}_{name}` 템플릿으로 번호를 붙인 모습이다. 이미 있는 파일과 겹치거나 새 이름끼리 중복되면 상태 열에 빨갛게 표시되고 **이름 바꾸기** 버튼이 꺼진다.
+
 <p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="screenshots/rename-dark.png">
   <img src="screenshots/rename-light.png" width="568" alt="이름 일괄 변경 창">
 </picture>
+</p>
+
+### 폴더로 이동
+
+클립보드에 경로가 있으면 입력 칸에 미리 채워 준다. 입력하는 동안 칸 아래에 그 경로가 폴더인지, 파일인지, 없는 경로인지 보여 주고, 없는 경로면 **이동** 버튼이 꺼진다.
+
+<p align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="screenshots/goto-dark.png">
   <img src="screenshots/goto-light.png" width="452" alt="폴더로 이동 창">
