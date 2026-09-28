@@ -35,6 +35,17 @@
 
 폴더 배경, 폴더, 파일 우클릭과 Finder 도구 막대 버튼에서 같은 메뉴를 쓸 수 있다.
 
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="screenshots/rename-dark.png">
+  <img src="screenshots/rename-light.png" width="568" alt="이름 일괄 변경 창">
+</picture>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="screenshots/goto-dark.png">
+  <img src="screenshots/goto-light.png" width="452" alt="폴더로 이동 창">
+</picture>
+</p>
+
 ## 설치
 
 ### 방법 1. DMG (권장)
