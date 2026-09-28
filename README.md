@@ -33,6 +33,25 @@
 
 ## 설치
 
+### 방법 1. DMG (권장)
+
+```sh
+./dmg.sh   # dist/RightMenu-<버전>.dmg 생성
+```
+
+1. `dist/RightMenu-0.0.1.dmg`를 열고 **RightMenu.app**을 **Applications**로 끌어다 놓는다.
+2. `RightMenu.app`을 한 번 실행한다(화면에는 아무것도 뜨지 않는다).
+3. **시스템 설정 > 개인정보 보호 및 보안 > 확장 프로그램 > Finder**에서 `RightMenu`를 켠다.
+
+> **다른 Mac에서 받은 DMG:** Apple 개발자 인증(공증)이 없는 ad-hoc 서명이라 "확인되지 않은 개발자" 경고가 뜬다. 소스를 확인한 뒤 격리 속성을 제거하고 실행한다.
+> ```sh
+> xattr -dr com.apple.quarantine /Applications/RightMenu.app
+> ```
+>
+> **소스 빌드 버전이 이미 있다면:** `~/Applications/RightMenu.app`을 지우고 설치해야 확장이 중복 등록되지 않는다.
+
+### 방법 2. 소스 빌드
+
 Xcode(`swiftc`)만 있으면 된다. 외부 의존성은 없다.
 
 ```sh
@@ -67,6 +86,8 @@ right-menu/
 ├── Host.swift           샌드박스 밖 헬퍼. 숨김 파일 전환만 담당
 ├── ext.entitlements     확장 권한 (샌드박스 + /Users/, /Volumes/ 쓰기)
 ├── build.sh             빌드 · 서명 · 등록 스크립트
+├── dmg.sh               DMG 생성 스크립트 (dist/RightMenu-<버전>.dmg)
+├── VERSION              버전 (현재 0.0.1)
 └── icons/               아이콘 원본(1024px)과 메뉴용(64px)
 ```
 
