@@ -11,7 +11,7 @@
 ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)
 ![Swift](https://img.shields.io/badge/Swift-FA7343?logo=swift&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Network](https://img.shields.io/badge/network-none-brightgreen)
+![Network](https://img.shields.io/badge/network-update%20check%20only-brightgreen)
 [![dmg](https://github.com/siyul-jh/righto/actions/workflows/dmg.yml/badge.svg)](https://github.com/siyul-jh/righto/actions/workflows/dmg.yml)
 
 </div>
@@ -31,6 +31,7 @@
 | <img src="icons/menu/hidden.png" width="24"> | **숨김 파일 표시 전환** | `Cmd+Shift+.` 와 같은 효과를 메뉴에서 실행한다 |
 | <img src="icons/menu/rename.png" width="24"> | **이름 일괄 변경…** | 항목을 선택했을 때만 나타난다. 찾기/바꾸기와 새 이름 템플릿(`{name}` 원래 이름, `{n}` 번호)을 쓰고, 확장자는 그대로 둔다. 미리보기에서 중복·기존 파일과의 충돌을 보여 주고 충돌이 있으면 적용하지 않는다 |
 | <img src="icons/menu/goto.png" width="24"> | **폴더로 이동…** | 클립보드에 있는 경로를 미리 채운다. `~`, 셸 이스케이프 경로, 현재 폴더 기준 상대 경로를 받고, 파일 경로면 그 파일을 선택해 보여 준다 |
+| <img src="icons/menu/update.png" width="24"> | **새 버전 받기** | 새 릴리스가 있을 때만 메뉴 맨 아래에 나타난다 |
 
 폴더 배경, 폴더, 파일 우클릭과 Finder 도구 막대 버튼에서 같은 메뉴를 쓸 수 있다.
 
@@ -83,6 +84,10 @@ Finder를 재시작하지 않고 전환하려면 **시스템 설정 > 개인정�
 - 한 번도 고르지 않았거나 고른 앱이 지워졌으면 설치된 목록의 첫 번째 앱을 쓴다.
 - 설정은 `~/Library/Application Support/Righto/config.json`에 저장된다.
 - kitty, Alacritty처럼 폴더를 명령줄 인자로만 받는 터미널은 폴더가 열리지 않을 수 있다.
+
+## 업데이트 확인
+
+메뉴를 열 때 하루에 한 번 GitHub API(`api.github.com/repos/siyul-jh/righto/releases/latest`)로 최신 버전만 확인한다. Righto가 쓰는 네트워크 요청은 이것뿐이며, 파일 정보는 보내지 않는다.
 
 ## iCloud Drive
 

@@ -3,6 +3,8 @@ import FinderSync
 
 final class FinderMenu: FIFinderSync {
     private static let CUT_KEY = "cutPaths"
+    private static let RELEASES = "https://github.com/siyul-jh/righto/releases/latest"
+    private static let LATEST_API = URL(string: "https://api.github.com/repos/siyul-jh/righto/releases/latest")!
     private static let NEW_FILES: [(label: String, ext: String, body: String)] = [
         ("텍스트 (.txt)", "txt", ""), ("마크다운 (.md)", "md", ""), ("JSON (.json)", "json", "{}\n"),
         ("HTML (.html)", "html", "<!doctype html>\n"), ("Python (.py)", "py", ""), ("셸 스크립트 (.sh)", "sh", "#!/bin/bash\n"),
@@ -59,6 +61,11 @@ final class FinderMenu: FIFinderSync {
         }
         add(menu, "폴더로 이동…", "goto", #selector(goTo))
 
+        checkUpdate()
+        if let latest = UserDefaults.standard.string(forKey: "latestVersion"), latest.compare(version, options: .numeric) == .orderedDescending {
+            menu.addItem(.separator())
+            add(menu, "새 버전 받기 (\(latest))", "update", #selector(openReleases))
+        }
         return menu
     }
 
@@ -161,4 +168,23 @@ final class FinderMenu: FIFinderSync {
     }
 
     @objc private func goTo() { request("goto", base.map { [URLQueryItem(name: "base", value: $0.path)] } ?? []) }
+
+    // MARK: 업데이트 확인
+
+    private var version: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0" }
+
+    // 메뉴를 열 때 하루에 한 번만 GitHub 최신 릴리스 태그를 받아 두고, 다음 메뉴부터 새 버전 항목을 보여 준다.
+    private func checkUpdate() {
+        let defaults = UserDefaults.standard
+        let now = Date().timeIntervalSince1970
+        guard now - defaults.double(forKey: "updateCheckedAt") > 86_400 else { return }
+        defaults.set(now, forKey: "updateCheckedAt")
+        URLSession.shared.dataTask(with: Self.LATEST_API) { data, _, _ in
+            guard let data, let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let tag = json["tag_name"] as? String else { return }
+            defaults.set(String(tag.trimmingPrefix("v")), forKey: "latestVersion")
+        }.resume()
+    }
+
+    @objc private func openReleases() { NSWorkspace.shared.open(URL(string: Self.RELEASES)!) }
 }
