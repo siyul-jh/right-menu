@@ -1,3 +1,42 @@
+# macOS
 .DS_Store
-.omc/
+.AppleDouble
+.Spotlight-V100
+.Trashes
+
+# 빌드 산출물 (DMG 는 GitHub Actions 가 만든다)
 dist/
+*.dmg
+*.app/
+*.appex/
+*.dSYM/
+.build/
+DerivedData/
+*.o
+*.swiftmodule
+
+# Python (dmg.sh 의 임시 venv 등)
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# 에디터·IDE
+.vscode/
+.idea/
+*.xcuserstate
+xcuserdata/
+*.swp
+
+# AI 도구 상태·로컬 설정
+.omc/
+.claude/
+.cursor/
+
+# 비밀 값·로그
+.env
+.env.*
+*.log
+*.pem
+*.p12
+*.key
