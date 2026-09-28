@@ -13,7 +13,6 @@ macOS Finder 우클릭 메뉴용 아이콘 7종. 기능마다 다른 색을 쓰�
 | `cut.png` | 잘라내기 | 빨강 | `#EF4444` |
 | `paste.png` | 붙여넣기 | 주황 | `#F59E0B` |
 | `hidden.png` | 숨김 파일 표시 | 청록(시안) | `#06B6D4` |
-| `toolbar.png` | 도구 막대 버튼 (전체 메뉴) | 인디고 + 무지개 항목 점 | `#6366F1` |
 
 ## 사용법
 
@@ -69,14 +68,6 @@ A colorful UI menu icon for a macOS app, flat vector style with bold solid color
 
 ```text
 A colorful UI menu icon for a macOS app, flat vector style with bold solid color fills and a slightly darker shade of the same hue for depth, rounded corners, simple geometric shapes, thick clean shapes that stay readable at 16px, high color saturation, fully transparent background, no text, no drop shadow, no gradient background, centered with 10% padding, square 1024x1024 PNG, consistent style and visual weight across the whole icon set. Must look good on both light and dark backgrounds. Icon subject: an open eye with a white almond-shaped outline, a cyan (#06B6D4) iris, and a dark pupil.
-```
-
-### 8. 도구 막대 버튼 — `toolbar.png`
-
-Finder 도구 막대에 놓이는 버튼이다. 다른 아이콘보다 크게(약 32px) 표시되므로 조금 더 디테일을 넣어도 된다. 7가지 기능 색(초록 `#10B981`, 파랑 `#3B82F6`, 보라 `#8B5CF6`, 주황 `#F59E0B`, 빨강 `#EF4444`, 청록 `#06B6D4`)이 전부 드러나야 "메뉴 전체"로 읽힌다.
-
-```text
-A colorful UI toolbar icon for a macOS Finder toolbar button, flat vector style with bold solid color fills and a slightly darker shade of the same hue for depth, rounded corners, simple geometric shapes, thick clean shapes that stay readable at 32px, high color saturation, fully transparent background, no text, no drop shadow, no gradient background, centered with 10% padding, square 1024x1024 PNG, consistent style and visual weight with the rest of the icon set. Must look good on both light and dark backgrounds. Icon subject: a rounded-square in indigo (#6366F1) representing a popup context menu, containing four horizontal menu rows, each row has a small colored circle on the left (emerald green #10B981, blue #3B82F6, orange #F59E0B, red #EF4444) and a white rounded bar on the right as a placeholder label, plus a small white mouse cursor arrow overlapping the bottom-right corner.
 ```
 
 ## 팁
