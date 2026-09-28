@@ -27,7 +27,7 @@ P
 mkdir -p "$EXT/Contents/Resources" && cp icons/menu/*.png "$EXT/Contents/Resources/"
 codesign -f -s - --entitlements ext.entitlements "$EXT"
 codesign -f -s - "$APP"
-open "$APP"; sleep 1
+open "$APP" --args --register; sleep 1
 pluginkit -a "$EXT"; pluginkit -e use -i $ID.finder
 killall Finder
 pluginkit -m -i $ID.finder -v

@@ -142,7 +142,6 @@ final class FinderMenu: FIFinderSync {
     @objc private func toggleHidden() {
         let host = Bundle.main.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let config = NSWorkspace.OpenConfiguration()
-        config.arguments = ["--toggle-hidden"]
         config.createsNewApplicationInstance = true
         NSWorkspace.shared.openApplication(at: host, configuration: config)
     }
