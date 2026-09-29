@@ -110,6 +110,15 @@ Finder를 재시작하지 않고 전환하려면 **시스템 설정 > 개인정�
 
 `Righto.app`을 실행하면 설정 창이 열린다. 터미널과 에디터를 고르고 **적용**을 누른다. 적용하기 전까지는 저장되지 않고, **닫기**를 누르면 변경이 버려진다.
 
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="screenshots/settings-dark.png">
+  <img src="screenshots/settings-light.png" width="389" alt="Righto 설정 창">
+</picture>
+</p>
+
+팝업에는 설치된 앱만 아이콘과 함께 나온다. 값을 바꾸면 **적용** 버튼이 켜진다.
+
 | | 목록에 나오는 앱 |
 |---|---|
 | **터미널** | cmux, Ghostty, iTerm, Warp, Terminal 중 설치된 것 |
