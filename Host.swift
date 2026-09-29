@@ -5,6 +5,14 @@ import Cocoa
 //   toggle-hidden (숨김 파일 전환), rename?p=<경로>… (이름 일괄 변경), goto?base=<폴더> (폴더로 이동)
 // build.sh 는 --register 로 실행해 등록만 하고 바로 끝낸다.
 
+func run(_ path: String, _ arguments: [String]) {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: path)
+    process.arguments = arguments
+    try? process.run()
+    process.waitUntilExit()
+}
+
 func toggleHidden() {
     let prompt = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
     // 손쉬운 사용 권한이 있으면 Finder 에 Cmd+Shift+. 를 보낸다 (재시작 없음).
@@ -22,11 +30,17 @@ func toggleHidden() {
     let finder = UserDefaults(suiteName: "com.apple.finder")!
     finder.set(!finder.bool(forKey: "AppleShowAllFiles"), forKey: "AppleShowAllFiles")
     finder.synchronize()
-    let kill = Process()
-    kill.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
-    kill.arguments = ["Finder"]
-    try? kill.run()
-    kill.waitUntilExit()
+    run("/usr/bin/killall", ["Finder"])
+}
+
+// DMG 로 설치하면 확장이 등록만 되고 꺼진 상태라 우클릭 메뉴에 나오지 않는다.
+// 확장을 등록·활성화하고 Finder 를 재시작해 바로 메뉴에 반영한다 (build.sh 의 설치 단계와 같다).
+func enableExtension() {
+    guard let id = Bundle.main.bundleIdentifier,
+          let ext = Bundle.main.builtInPlugInsURL?.appendingPathComponent("FinderMenu.appex") else { return }
+    run("/usr/bin/pluginkit", ["-a", ext.path])
+    run("/usr/bin/pluginkit", ["-e", "use", "-i", id + ".finder"])
+    run("/usr/bin/killall", ["Finder"])
 }
 
 final class Delegate: NSObject, NSApplicationDelegate {
@@ -71,7 +85,7 @@ final class Delegate: NSObject, NSApplicationDelegate {
 
     // MARK: 설정 창
 
-    // 팝업에서 고른 값은 pending 에만 두고, '적용'을 눌러야 저장한다.
+    // 팝업에서 고른 값은 pending 에만 두고, '적용'을 눌러야 저장한다. '적용'은 확장 활성화·Finder 재시작도 하므로 항상 켜 둔다.
     private var pending = (terminal: Config.terminal, editor: Config.editor)
     private let applyButton = NSButton(title: "적용", target: nil, action: nil)
 
@@ -97,7 +111,6 @@ final class Delegate: NSObject, NSApplicationDelegate {
         applyButton.target = self
         applyButton.action = #selector(apply)
         applyButton.keyEquivalent = "\r"
-        applyButton.isEnabled = false
         for button in [close, applyButton] {
             button.controlSize = .large
             button.widthAnchor.constraint(greaterThanOrEqualToConstant: 84).isActive = true
@@ -146,7 +159,6 @@ final class Delegate: NSObject, NSApplicationDelegate {
     private func refill() {
         fill(terminalPopup, Config.terminals, current: pending.terminal)
         fill(editorPopup, Config.editors, current: pending.editor)
-        applyButton.isEnabled = pending != (Config.terminal, Config.editor)
     }
 
     private func fill(_ popup: NSPopUpButton, _ candidates: [URL], current: URL) {
@@ -179,7 +191,7 @@ final class Delegate: NSObject, NSApplicationDelegate {
 
     @objc private func apply() {
         Config.set(terminal: pending.terminal, editor: pending.editor)
-        applyButton.isEnabled = false
+        enableExtension()
     }
 
     @objc private func closeWindow() { window?.close() }
