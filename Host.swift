@@ -115,9 +115,13 @@ final class Delegate: NSObject, NSApplicationDelegate {
             button.controlSize = .large
             button.widthAnchor.constraint(greaterThanOrEqualToConstant: 84).isActive = true
         }
-        let buttons = NSStackView(views: [close, applyButton])
+        let version = NSTextField(labelWithString: "버전 \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")")
+        version.textColor = .secondaryLabelColor
+        // 버전은 왼쪽 끝, 버튼은 오른쪽 끝에 둔다.
+        let buttons = NSStackView()
         buttons.spacing = 8
-        buttons.setHuggingPriority(.required, for: .horizontal)  // 늘어나지 않게 해서 오른쪽 정렬이 적용되도록
+        buttons.setViews([version], in: .leading)
+        buttons.setViews([close, applyButton], in: .trailing)
 
         let grid = NSGridView(views: [
             [NSTextField(labelWithString: "터미널"), terminalPopup],
@@ -135,6 +139,7 @@ final class Delegate: NSObject, NSApplicationDelegate {
         content.orientation = .vertical
         content.alignment = .trailing
         content.spacing = 20
+        buttons.widthAnchor.constraint(equalTo: content.widthAnchor).isActive = true
 
         let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = "Righto 설정"
